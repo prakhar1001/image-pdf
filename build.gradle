@@ -10,6 +10,9 @@ dependencies {
         'com.amazonaws:aws-lambda-java-events:1.1.0',
         'org.apache.pdfbox:pdfbox:1.8.3'   
 )
+compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
+
 }
 
 task buildZip(type: Zip) {

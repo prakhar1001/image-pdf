@@ -12,6 +12,10 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONObject;
+
+import java.util.*;
+import java.net.*;
 import java.io.*; 
 import java.io.File;
 import java.util.List;
@@ -93,6 +97,12 @@ public class S3EventProcessorCreateThumbnail implements
 
             String docType = matcher.group(1);
 
+
+
+
+
+
+
             if (PDF_TYPE.equals(docType)) {
 
             PDDocument document = PDDocument.load(objectData);
@@ -144,6 +154,12 @@ public class S3EventProcessorCreateThumbnail implements
             }
 
 
+
+
+
+
+
+
             BufferedImage resizedImage = new BufferedImage(width, height,
                     BufferedImage.TYPE_INT_RGB);
             Graphics2D g = resizedImage.createGraphics();
@@ -170,7 +186,36 @@ public class S3EventProcessorCreateThumbnail implements
 
             s3Client.putObject(dstBucket, dstKey, is, meta);
 
-            return "Ok";
+
+           String END_POINT = "s3.ap-south-1.amazonaws.com";
+        
+           String[] parts = srcKey.split("~");
+           String user_id = parts[0]; 
+	   user_id  = user_id.replaceAll("[^\\d]", "");
+           String docUrl = "";
+
+
+           docUrl = "https://" + END_POINT + "/" + srcBucket + "/" + srcKey;
+  
+           URL url = new URL("");   
+
+           JSONObject params = new JSONObject();
+           params.put("image_url", docUrl);
+           params.put("user_id", user_id);
+
+          byte[] postDataBytes = params.toString().getBytes("UTF-8");
+
+          HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+          conn.setRequestMethod("POST");
+          conn.setRequestProperty("Content-Type", "application/json");
+          conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+          conn.setDoOutput(true);
+          conn.getOutputStream().write(postDataBytes);
+
+          Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+          return "Ok";
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
